@@ -9,6 +9,12 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Classes">
+      <UniqueIdentifier>{3ab1e65a-0dd8-454f-82a9-5bbbf9e1e65f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\network">
+      <UniqueIdentifier>{afd319c0-8207-4504-a16a-6ab24c2d18fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -20,16 +26,19 @@
     <ClInclude Include="targetver.h">
       <Filter>win32</Filter>
     </ClInclude>
+    <ClInclude Include="include\IOCP.h">
+      <Filter>Classes\network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>win32</Filter>
     </ClCompile>
-    <ClCompile Include="proj_core.cpp">
-      <Filter>win32</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\IOCP.cpp">
+      <Filter>Classes\network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
