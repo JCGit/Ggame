@@ -1,0 +1,8 @@
+*.user
+*.filters
+Debug
+/Code_Server/*.XML
+/Code_Server/*
+/Code_Server/*.opensdf
+/Code_Server/*.sdf
+/Code_Server/*.suo
