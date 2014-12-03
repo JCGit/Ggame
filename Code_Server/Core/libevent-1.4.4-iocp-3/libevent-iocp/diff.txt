@@ -1,0 +1,224 @@
+Only in libevent: .svn
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp: Debug
+Only in libevent/WIN32-Code: .svn
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/WIN32-Code: IPEXPORT.H
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/WIN32-Code: IPRTRMIB.H
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/WIN32-Code: IPTYPES.H
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/WIN32-Code: Iphlpapi.h
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/WIN32-Code: misc.c
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/WIN32-Code: misc.h
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/WIN32-Code: win32iocp.c
+Only in libevent/WIN32-Prj: .svn
+Only in libevent/WIN32-Prj/event_test: .svn
+Only in libevent/WIN32-Prj/signal_test: .svn
+Only in libevent/WIN32-Prj/time_test: .svn
+diff -b -ur libevent/buffer.c /mnt/hgfs/stephen/libevent-1.4.4-iocp/buffer.c
+--- libevent/buffer.c	Sun Jun  1 11:46:48 2008
++++ /mnt/hgfs/stephen/libevent-1.4.4-iocp/buffer.c	Sun Jun  1 12:29:58 2008
+@@ -155,7 +155,7 @@
+ 		va_copy(aq, ap);
+ 
+ #ifdef WIN32
+-		sz = vsnprintf(buffer, space - 1, fmt, aq);
++		sz = _vsnprintf(buffer, space - 1, fmt, aq);
+ 		buffer[space - 1] = '\0';
+ #else
+ 		sz = vsnprintf(buffer, space, fmt, aq);
+Only in libevent/compat: .svn
+Only in libevent/compat/sys: .svn
+diff -b -ur libevent/event.c /mnt/hgfs/stephen/libevent-1.4.4-iocp/event.c
+--- libevent/event.c	Sun Jun  1 11:46:48 2008
++++ /mnt/hgfs/stephen/libevent-1.4.4-iocp/event.c	Tue Jun  3 23:10:22 2008
+@@ -76,6 +76,7 @@
+ #endif
+ #ifdef WIN32
+ extern const struct eventop win32ops;
++extern const struct eventop win32iocpops;
+ #endif
+ 
+ /* In order of preference */
+@@ -99,7 +100,8 @@
+ 	&selectops,
+ #endif
+ #ifdef WIN32
+-	&win32ops,
++	//&win32ops,
++	&win32iocpops,
+ #endif
+ 	NULL
+ };
+diff -b -ur libevent/event.h /mnt/hgfs/stephen/libevent-1.4.4-iocp/event.h
+--- libevent/event.h	Sun Jun  1 11:46:48 2008
++++ /mnt/hgfs/stephen/libevent-1.4.4-iocp/event.h	Sun Jun  1 12:28:42 2008
+@@ -197,6 +197,7 @@
+ #define EV_WRITE	0x04
+ #define EV_SIGNAL	0x08
+ #define EV_PERSIST	0x10	/* Persistant event */
++#define EV_ACCEPT   0x20
+ 
+ /* Fix so that ppl dont have to run with <sys/queue.h> */
+ #ifndef TAILQ_ENTRY
+diff -b -ur libevent/http.c /mnt/hgfs/stephen/libevent-1.4.4-iocp/http.c
+--- libevent/http.c	Sun Jun  1 11:46:48 2008
++++ /mnt/hgfs/stephen/libevent-1.4.4-iocp/http.c	Wed Jun  4 23:35:50 2008
+@@ -1982,7 +1982,8 @@
+ accept_socket(int fd, short what, void *arg)
+ {
+ 	struct evhttp *http = arg;
+-	struct sockaddr_storage ss;
++	//struct sockaddr_storage ss;
++	struct sockaddr_in ss;
+ 	socklen_t addrlen = sizeof(ss);
+ 	int nfd;
+ 
+@@ -2034,7 +2035,7 @@
+ 	ev = &bound->bind_ev;
+ 
+ 	/* Schedule the socket for accepting */
+-	event_set(ev, fd, EV_READ | EV_PERSIST, accept_socket, http);
++	event_set(ev, fd, EV_ACCEPT | EV_READ | EV_PERSIST, accept_socket, http);
+ 	EVHTTP_BASE_SET(http, ev);
+ 
+ 	res = event_add(ev, NULL);
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp: libevent-iocp
+Only in libevent/sample: .svn
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/sample: Debug
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/sample: echo-iocp.c
+Only in libevent/test: .svn
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/test: Debug
+diff -b -ur libevent/test/regress.c /mnt/hgfs/stephen/libevent-1.4.4-iocp/test/regress.c
+--- libevent/test/regress.c	Sun Jun  1 11:46:17 2008
++++ /mnt/hgfs/stephen/libevent-1.4.4-iocp/test/regress.c	Wed Jun  4 23:37:26 2008
+@@ -54,6 +54,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <errno.h>
++#include <assert.h>
+ 
+ #include "event.h"
+ #include "evutil.h"
+@@ -61,7 +62,7 @@
+ #include "log.h"
+ 
+ #include "regress.h"
+-#include "regress.gen.h"
++//#include "regress.gen.h"
+ 
+ int pair[2];
+ int test_ok;
+@@ -179,7 +180,7 @@
+ 	struct timeval tv;
+ 	int diff;
+ 
+-	gettimeofday(&tcalled, NULL);
++	evutil_gettimeofday(&tcalled, NULL);
+ 	if (evutil_timercmp(&tcalled, &tset, >))
+ 		evutil_timersub(&tcalled, &tset, &tv);
+ 	else
+@@ -442,7 +443,7 @@
+ 	evtimer_set(&ev, timeout_cb, NULL);
+ 	evtimer_add(&ev, &tv);
+ 
+-	gettimeofday(&tset, NULL);
++	evutil_gettimeofday(&tset, NULL);
+ 	event_dispatch();
+ 
+ 	cleanup_test();
+@@ -758,9 +759,9 @@
+ 	tv.tv_sec = 1;
+ 	event_loopexit(&tv);
+ 
+-	gettimeofday(&tv_start, NULL);
++	evutil_gettimeofday(&tv_start, NULL);
+ 	event_dispatch();
+-	gettimeofday(&tv_end, NULL);
++	evutil_gettimeofday(&tv_end, NULL);
+ 	evutil_timersub(&tv_end, &tv_start, &tv_end);
+ 
+ 	evtimer_del(&ev);
+@@ -1060,7 +1061,7 @@
+ 	struct test_pri_event one, two;
+ 	struct timeval tv;
+ 
+-	snprintf(buf, sizeof(buf), "Testing Priorities %d: ", npriorities);
++	_snprintf(buf, sizeof(buf), "Testing Priorities %d: ", npriorities);
+ 	setup_test(buf);
+ 
+ 	event_base_priority_init(global_base, npriorities);
+@@ -1325,6 +1326,7 @@
+ 	fprintf(stdout, "OK\n");
+ }
+ 
++#if 0
+ static void
+ rpc_test(void)
+ {
+@@ -1408,6 +1410,7 @@
+ 
+ 	fprintf(stdout, "OK\n");
+ }
++#endif
+ 
+ static void
+ test_evutil_strtoll(void)
+@@ -1470,16 +1473,18 @@
+ 
+ 	test_event_base_new();
+ 
+-	http_suite();
++	//http_suite();
+ 
+-	rpc_suite();
++	//rpc_suite();
+ 
+-	dns_suite();
++	//dns_suite();
+ 	
+ #ifndef WIN32
+ 	test_fork();
+ #endif
+ 
++	global_base = event_init();
++
+ 	test_simpleread();
+ 
+ 	test_simplewrite();
+@@ -1506,7 +1511,7 @@
+ 
+ 	evtag_test();
+ 
+-	rpc_test();
++	//rpc_test();
+ 
+ #ifndef WIN32
+ 	test_signal_dealloc();
+Only in /mnt/hgfs/stephen/libevent-1.4.4-iocp/test: regress.c.bak
+diff -b -ur libevent/test/regress_http.c /mnt/hgfs/stephen/libevent-1.4.4-iocp/test/regress_http.c
+--- libevent/test/regress_http.c	Sun Jun  1 11:46:17 2008
++++ /mnt/hgfs/stephen/libevent-1.4.4-iocp/test/regress_http.c	Tue Jun  3 22:43:16 2008
+@@ -118,10 +118,12 @@
+ 	int fd;
+ 	
+ #ifdef WIN32
+-	if (!(he = gethostbyname(address))) {
+-		event_warn("gethostbyname");
+-	}
+-	memcpy(&sin.sin_addr, &he->h_addr, sizeof(struct in_addr));
++	//if (!(he = gethostbyname(address))) {
++		//event_warn("gethostbyname");
++	//}
++	//memcpy(&sin.sin_addr, &he->h_addr, sizeof(struct in_addr));
++	sin.sin_addr.s_addr = inet_addr( address );
++	sin.sin_family = AF_INET;
+ 	sin.sin_port = htons(port);
+ 	slen = sizeof(struct sockaddr_in);
+ 	sa = (struct sockaddr*)&sin;
+@@ -143,7 +145,7 @@
+ 		event_err(1, "socket failed");
+ 
+ 	if (connect(fd, sa, slen) == -1)
+-		event_err(1, "connect failed");
++		event_err(1, "connect failed, errno %d",WSAGetLastError());
+ 
+ #ifndef WIN32
+ 	freeaddrinfo(aitop);
