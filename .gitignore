@@ -6,3 +6,4 @@ Debug
 /Code_Server/*.opensdf
 /Code_Server/*.sdf
 /Code_Server/*.suo
+/Code_Server/Core/libevent-1.4.4-iocp-3/libevent-iocp/*.dsp
