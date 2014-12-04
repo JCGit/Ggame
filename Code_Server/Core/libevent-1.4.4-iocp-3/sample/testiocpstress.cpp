@@ -21,7 +21,7 @@
 
 static const char * gHost = "127.0.0.1";
 static int gPort = 5001;
-static int gMsgs = 10;
+static int gMsgs = 10000;
 static int gClients = 10;
 
 struct SP_TestStat {
